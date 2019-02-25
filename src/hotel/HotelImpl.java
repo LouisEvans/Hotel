@@ -10,6 +10,7 @@ public class HotelImpl{
     }
 
     public static boolean importRoomsData(String RoomType){
+        /* Henlo */
         return true;
     }
 }

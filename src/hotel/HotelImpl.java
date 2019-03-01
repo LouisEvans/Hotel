@@ -23,7 +23,7 @@ public class HotelImpl{
         System.out.println(importGuestsData("src/data/guests.txt"));
         System.out.println(importBookingsData("src/data/bookings.txt"));
         System.out.println(importPaymentsData("src/data/payments.txt"));
-        
+
     }
 
     public static boolean importRoomsData(String roomsTxtFileName){

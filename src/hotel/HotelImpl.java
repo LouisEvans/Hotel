@@ -24,6 +24,9 @@ public class HotelImpl{
         System.out.println(importBookingsData("src/data/bookings.txt"));
         System.out.println(importPaymentsData("src/data/payments.txt"));
 
+        displayAllRooms();
+        addRoom(123,RoomType.DOUBLE,123.00,2,"no bathroom");
+        displayAllRooms();
     }
 
     public static boolean importRoomsData(String roomsTxtFileName){
@@ -154,14 +157,34 @@ public class HotelImpl{
         return true;
     }
 
+    public static void displayAllRooms() {
+        System.out.println("-----------------------------------------------------------------------------------");
+        System.out.printf("%5s %20s %10s %5s %30s\n", "Number", "Type", "Price", "Capacity", "Facilities");
+        for (Room room : rooms) {
+            //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
+            System.out.format("%5d %20s %10f %5d %30s\n", room.roomNumber, room.roomType, room.roomPrice, room.roomCapacity, room.roomFacilities);
+        }
+        System.out.println("-----------------------------------------------------------------------------------");
+    }
+
+    public static void displayAllGuests() {
+        /*System.out.println("-----------------------------------------------------------------------------------");
+        System.out.printf("%5d %20s %20s %20s\n", "ID", "Name", "Surname", "Join Date");
+        for (Guest guest : guests) {
+            //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
+            System.out.format("%5d %20s %20s %20s\n", room.roomNumber, room.roomType, room.roomPrice, room.roomCapacity, room.roomFacilities);
+        }
+        System.out.println("-----------------------------------------------------------------------------------");*/
+    }
+
     public static boolean addRoom(int roomNumber, RoomType roomType, double price, int capacity, String facilities) {
-        Boolean contains = false;
+        boolean contains = false;
         for(Room room : rooms) {
             if (room.roomNumber == roomNumber) {
                 contains = true;
             }
         }
-        if (contains = false){
+        if (contains == false){
             try {
                 rooms.add(new Room(roomNumber, roomType, price, capacity, facilities));
                 return true;

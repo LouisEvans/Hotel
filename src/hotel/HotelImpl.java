@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 //abstract class HotelImpl implements hotel.Hotel {
@@ -24,9 +25,14 @@ public class HotelImpl{
         System.out.println(importBookingsData("src/data/bookings.txt"));
         System.out.println(importPaymentsData("src/data/payments.txt"));
 
-        displayAllRooms();
+        /*displayAllRooms();
         addRoom(123,RoomType.DOUBLE,123.00,2,"no bathroom");
+        displayAllRooms();*/
+
         displayAllRooms();
+        displayAllBookings();
+        System.out.println(Arrays.toString(availableRooms(RoomType.TWIN, LocalDate.parse("2019-04-08"), LocalDate.parse("2019-04-10"))));
+        //System.out.println(isAvailable(104, LocalDate.parse("2019-04-01"), LocalDate.parse("2019-04-10")));
     }
 
     public static boolean importRoomsData(String roomsTxtFileName){
@@ -168,13 +174,87 @@ public class HotelImpl{
     }
 
     public static void displayAllGuests() {
-        /*System.out.println("-----------------------------------------------------------------------------------");
-        System.out.printf("%5d %20s %20s %20s\n", "ID", "Name", "Surname", "Join Date");
+        System.out.println("-----------------------------------------------------------------------------------------------------------------");
+        System.out.printf("%5s %15s %15s %15s %20s %20s\n", "ID", "Name", "Surname", "Join Date", "VIP Start Date", "VIP End Date");
         for (Guest guest : guests) {
             //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
-            System.out.format("%5d %20s %20s %20s\n", room.roomNumber, room.roomType, room.roomPrice, room.roomCapacity, room.roomFacilities);
+            System.out.format("%5s %15s %15s %15s", guest.guestID, guest.guestName, guest.guestSurname, guest.guestDateJoin);
+
+            if(guest instanceof VIPGuest){
+                System.out.format("%20s %20s\n", ((VIPGuest)guest).VIPstartDate, ((VIPGuest)guest).VIPexpiryDate);
+            }else{
+                System.out.format("\n");
+            }
         }
-        System.out.println("-----------------------------------------------------------------------------------");*/
+        System.out.println("-----------------------------------------------------------------------------------------------------------------");
+    }
+
+    public static void displayAllBookings(){
+        System.out.println("-----------------------------------------------------------------------------------");
+        System.out.printf("%10s %10s %10s %15s %15s %15s %15s\n", "ID", "Guest ID", "Room Number", "Booking Date", "Check-in Date", "Check-out Date", "Total amount");
+        for (Booking booking : bookings) {
+            //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
+            System.out.format("%10d %10d %10d %15s %15s %15s %15f\n", booking.bookingID, booking.bookingGuestID, booking.bookingRoomNumber, booking.bookingBookingDate, booking.bookingCheckInDate, booking.bookingCheckOutDate, booking.bookingTotalAmount);
+        }
+        System.out.println("-----------------------------------------------------------------------------------");
+    }
+
+    public static void displayAllPayments(){
+        System.out.println("-----------------------------------------------------------------------------------");
+        System.out.printf("%15s %15s %15s %25s\n", "Date", "Guest ID", "Total Amount", "Reason");
+        for (Payment payment : payments) {
+            //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
+            System.out.format("%15s %15d %15f %25s\n", payment.paymentDate, payment.paymentGuestID, payment.paymentTotalAmount, payment.paymentReason);
+        }
+        System.out.println("-----------------------------------------------------------------------------------");
+    }
+
+    public static boolean isAvailable(int roomNumber, LocalDate checkin, LocalDate checkout){
+        for(Booking booking : bookings){
+            if(roomNumber == booking.bookingRoomNumber) {
+                if(checkin.compareTo(booking.bookingCheckInDate) < 0) {
+                    //Checkin is before checkin
+                    if (checkout.compareTo(booking.bookingCheckInDate) <= 0) {
+                        //System.out.println("checkin before checkin, checkout before checkin");
+                        return true;
+                    }else if(checkout.compareTo(booking.bookingCheckInDate) >= 0){
+                        //System.out.println("checkin before checkin, checkout after checkin");
+                        return false;
+                    }
+                }else if(checkin.compareTo(booking.bookingCheckOutDate) >= 0){
+                    //Checkin is after checkout
+                    //System.out.println("checkin is after target checkout");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static int[] availableRooms(RoomType roomType, LocalDate checkin, LocalDate checkout){
+
+        List<Room> roomsOfType = new ArrayList<>();
+
+        for(Room room : rooms){
+            if(room.roomType == roomType){
+                roomsOfType.add(room);
+            }
+        }
+
+        for(Room room : roomsOfType){
+            if(isAvailable(room.roomNumber, checkin, checkout) == false){
+                roomsOfType.remove(room);
+            }
+        }
+
+        int returnArray[] = new int[roomsOfType.size()];
+        int count = 0;
+        for(Room room : roomsOfType){
+            returnArray[count] = room.roomNumber;
+            count++;
+        }
+
+        return returnArray;
     }
 
     public static boolean addRoom(int roomNumber, RoomType roomType, double price, int capacity, String facilities) {
@@ -197,5 +277,90 @@ public class HotelImpl{
             return false;
         }
     }
+
+    public static boolean removeRoom(int roomNumber) {
+        boolean contains = false;
+        for (Booking book : bookings) {
+            if (book.bookingRoomNumber == roomNumber) {
+                contains = true;
+            }
+        }
+        if (contains == false) {
+            try {
+                for (Room room : rooms) {
+                    if (room.roomNumber == roomNumber) {
+                        rooms.remove(room);
+                        return true;
+                    }
+                }
+            }catch (Exception e) {
+                System.out.println(e);
+                return false;
+            }
+
+        } else {
+            return false;
+        }
+        return false;
+    }
+
+    public static boolean addGuest(String guestName, String guestSurname, LocalDate guestDateJoin) {
+        try {
+            guests.add(new Guest(newGuestID(),guestName, guestSurname, guestDateJoin));
+            return true;
+        }
+        catch(Exception e) {
+            System.out.println(e);
+            return false;
+        }
+    }
+
+    private static int newGuestID(){
+        return (guests.get(guests.size()-1).guestID + 1);
+    }
+
+    public static boolean addGuest(String guestName,String guestSurname,LocalDate guestDateJoin, LocalDate guestVIPStartDate,LocalDate guestVIPExpiryDate) {
+        try {
+            guests.add(new VIPGuest(newGuestID(),guestName, guestSurname, guestDateJoin, guestVIPStartDate, guestVIPExpiryDate));
+            return true;
+        }
+        catch(Exception e) {
+            System.out.println(e);
+            return false;
+        }
+    }
+
+    public static boolean removeGuest(int guestID){
+        boolean contains = false;
+        LocalDate now = LocalDate.now();
+        for (Booking book : bookings) {
+            if (book.bookingGuestID == guestID && book.bookingCheckInDate.compareTo(now) > 0) {
+                contains = true;
+                System.out.println("Guest Still has Future Bookings");
+                return false;
+            }
+
+        }
+        if (contains == false) {
+            try {
+                for (Guest hotelGuest : guests) {
+                    if (hotelGuest.guestID == guestID) {
+                        guests.remove(hotelGuest);
+                        return true;
+                    }
+                }
+            }catch (Exception e) {
+                System.out.println(e);
+                return false;
+            }
+
+        } else {
+            return false;
+        }
+        return false;
+
+    }
+
 }
+
 

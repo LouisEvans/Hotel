@@ -14,7 +14,7 @@ public class Booking {
 
     public Booking(int id, int guestID, int roomNumber, LocalDate bookingDate, LocalDate checkInDate, LocalDate checkOutDate, double totalAmount){
         bookingID = id;
-        bookingGuestID = roomNumber;
+        bookingGuestID = guestID;
         bookingRoomNumber = roomNumber;
         bookingBookingDate = bookingDate;
         bookingCheckInDate = checkInDate;

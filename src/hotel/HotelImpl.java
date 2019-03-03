@@ -1,41 +1,46 @@
 package hotel;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
-//abstract class HotelImpl implements hotel.Hotel {
-public class HotelImpl{
+import static java.time.temporal.ChronoUnit.DAYS;
+
+abstract class HotelImpl implements hotel.Hotel{
 
     private static List<Room> rooms = new ArrayList<>();
     private static List<Guest> guests = new ArrayList<>();
     private static List<Booking> bookings = new ArrayList<>();
     private static List<Payment> payments = new ArrayList<>();
 
-    public static void main(String args[]){
-        System.out.println("Hello World!");
+    /*public void main(String args[]){
 
-        System.out.println(importRoomsData("src/data/rooms.txt"));
-        System.out.println(importGuestsData("src/data/guests.txt"));
-        System.out.println(importBookingsData("src/data/bookings.txt"));
-        System.out.println(importPaymentsData("src/data/payments.txt"));
+        //System.out.println(importRoomsData("src/data/rooms.txt"));
+        //System.out.println(importGuestsData("src/data/guests.txt"));
+        //System.out.println(importBookingsData("src/data/bookings.txt"));
+        //System.out.println(importPaymentsData("src/data/payments.txt"));
 
-        /*displayAllRooms();
-        addRoom(123,RoomType.DOUBLE,123.00,2,"no bathroom");
-        displayAllRooms();*/
+        //displayAllRooms();
+        //addRoom(123,RoomType.DOUBLE,123.00,2,"no bathroom");
+        //displayAllRooms();
 
-        displayAllRooms();
-        displayAllBookings();
-        System.out.println(Arrays.toString(availableRooms(RoomType.TWIN, LocalDate.parse("2019-04-08"), LocalDate.parse("2019-04-10"))));
-        //System.out.println(isAvailable(104, LocalDate.parse("2019-04-01"), LocalDate.parse("2019-04-10")));
-    }
+        //displayAllRooms();
+        //displayAllBookings();
+        //System.out.println(Arrays.toString(availableRooms(RoomType.FAMILY, LocalDate.parse("2019-04-04"), LocalDate.parse("2019-04-10"))));
+        //System.out.println(isAvailable(102, LocalDate.parse("2019-04-01"), LocalDate.parse("2019-04-10")));
 
-    public static boolean importRoomsData(String roomsTxtFileName){
+        //displayAllGuests();
+        //System.out.println(Arrays.toString(searchGuest("Sarah","Hoopern")));
+        //displayGuestBooking(10001);
+
+        //displayBookingsOn(LocalDate.parse("2019-04-01"));
+        //displayPaymentsOn(LocalDate.parse("2019-02-11"));
+    }*/
+
+    public boolean importRoomsData(String roomsTxtFileName){
         BufferedReader br = null;
         String line = "";
         String splitBy = ",";
@@ -81,7 +86,7 @@ public class HotelImpl{
         }
     }
 
-    public static boolean importGuestsData(String guestsTxtFileName){
+    public boolean importGuestsData(String guestsTxtFileName){
         BufferedReader br = null;
         String line = "";
         String splitBy = ",";
@@ -112,7 +117,7 @@ public class HotelImpl{
         }
     }
 
-    public static boolean importBookingsData(String bookingsTxtFileName){
+    public boolean importBookingsData(String bookingsTxtFileName){
         BufferedReader br = null;
         String line = "";
         String splitBy = ",";
@@ -139,7 +144,7 @@ public class HotelImpl{
         return true;
     }
 
-    public static boolean importPaymentsData(String paymentsTxtFileName){
+    public boolean importPaymentsData(String paymentsTxtFileName){
         BufferedReader br = null;
         String line = "";
         String splitBy = ",";
@@ -163,7 +168,7 @@ public class HotelImpl{
         return true;
     }
 
-    public static void displayAllRooms() {
+    public void displayAllRooms() {
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%5s %20s %10s %5s %30s\n", "Number", "Type", "Price", "Capacity", "Facilities");
         for (Room room : rooms) {
@@ -173,7 +178,7 @@ public class HotelImpl{
         System.out.println("-----------------------------------------------------------------------------------");
     }
 
-    public static void displayAllGuests() {
+    public void displayAllGuests() {
         System.out.println("-----------------------------------------------------------------------------------------------------------------");
         System.out.printf("%5s %15s %15s %15s %20s %20s\n", "ID", "Name", "Surname", "Join Date", "VIP Start Date", "VIP End Date");
         for (Guest guest : guests) {
@@ -189,7 +194,7 @@ public class HotelImpl{
         System.out.println("-----------------------------------------------------------------------------------------------------------------");
     }
 
-    public static void displayAllBookings(){
+    public void displayAllBookings(){
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%10s %10s %10s %15s %15s %15s %15s\n", "ID", "Guest ID", "Room Number", "Booking Date", "Check-in Date", "Check-out Date", "Total amount");
         for (Booking booking : bookings) {
@@ -199,7 +204,7 @@ public class HotelImpl{
         System.out.println("-----------------------------------------------------------------------------------");
     }
 
-    public static void displayAllPayments(){
+    public void displayAllPayments(){
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%15s %15s %15s %25s\n", "Date", "Guest ID", "Total Amount", "Reason");
         for (Payment payment : payments) {
@@ -209,31 +214,22 @@ public class HotelImpl{
         System.out.println("-----------------------------------------------------------------------------------");
     }
 
-    public static boolean isAvailable(int roomNumber, LocalDate checkin, LocalDate checkout){
-        for(Booking booking : bookings){
-            if(roomNumber == booking.bookingRoomNumber) {
-                if(checkin.compareTo(booking.bookingCheckInDate) < 0) {
-                    //Checkin is before checkin
-                    if (checkout.compareTo(booking.bookingCheckInDate) <= 0) {
-                        //System.out.println("checkin before checkin, checkout before checkin");
-                        return true;
-                    }else if(checkout.compareTo(booking.bookingCheckInDate) >= 0){
-                        //System.out.println("checkin before checkin, checkout after checkin");
-                        return false;
-                    }
-                }else if(checkin.compareTo(booking.bookingCheckOutDate) >= 0){
-                    //Checkin is after checkout
-                    //System.out.println("checkin is after target checkout");
-                    return true;
+    public boolean isAvailable(int roomNumber, LocalDate checkin, LocalDate checkout){
+        for(Booking booking : bookings) {
+
+            if (roomNumber == booking.bookingRoomNumber) {
+                if(((checkin.isAfter(booking.bookingCheckInDate) || checkin.equals(booking.bookingCheckInDate)) && checkin.isBefore(booking.bookingCheckOutDate)) || (checkin.isBefore(booking.bookingCheckInDate) && checkout.isAfter(booking.bookingCheckInDate))){
+                    return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 
-    public static int[] availableRooms(RoomType roomType, LocalDate checkin, LocalDate checkout){
+    public int[] availableRooms(RoomType roomType, LocalDate checkin, LocalDate checkout){
 
         List<Room> roomsOfType = new ArrayList<>();
+        List<Room> roomsToRemove = new ArrayList<>();
 
         for(Room room : rooms){
             if(room.roomType == roomType){
@@ -241,11 +237,13 @@ public class HotelImpl{
             }
         }
 
-        for(Room room : roomsOfType){
-            if(isAvailable(room.roomNumber, checkin, checkout) == false){
-                roomsOfType.remove(room);
+        for (Room room : roomsOfType) {
+            if (isAvailable(room.roomNumber, checkin, checkout) == false) {
+                roomsToRemove.add(room);
             }
         }
+
+        roomsOfType.removeAll(roomsToRemove);
 
         int returnArray[] = new int[roomsOfType.size()];
         int count = 0;
@@ -257,7 +255,117 @@ public class HotelImpl{
         return returnArray;
     }
 
-    public static boolean addRoom(int roomNumber, RoomType roomType, double price, int capacity, String facilities) {
+    public int[] searchGuest(String firstName, String lastName){
+
+        List<Integer> guestIDs = new ArrayList<>();
+
+        for(Guest guest : guests){
+            if(guest.guestName.equals(firstName) && guest.guestSurname.equals(lastName)){
+                guestIDs.add(guest.guestID);
+            }
+        }
+
+        int[] returnArray = new int[guestIDs.size()];
+        int count = 0;
+        for(Integer guestID : guestIDs){
+            returnArray[count] = guestID;
+        }
+
+        return returnArray;
+    }
+
+    public void displayGuestBooking(int guestID){
+        System.out.println("-----------------------------------------------------------------------------------");
+        System.out.printf("%10s %10s %10s %15s %15s %15s %15s\n", "ID", "Guest ID", "Room Number", "Booking Date", "Check-in Date", "Check-out Date", "Total amount");
+        for(Booking booking : bookings){
+            if(booking.bookingGuestID == guestID){
+                System.out.format("%10d %10d %10d %15s %15s %15s %15f\n", booking.bookingID, booking.bookingGuestID, booking.bookingRoomNumber, booking.bookingBookingDate, booking.bookingCheckInDate, booking.bookingCheckOutDate, booking.bookingTotalAmount);
+            }
+        }
+        System.out.println("-----------------------------------------------------------------------------------");
+    }
+
+    public void displayBookingsOn(LocalDate thisDate) {
+
+        List<Booking> bookingsToDisplay = new ArrayList<>();
+        List<Booking> bookingsToRemove = new ArrayList<>();
+
+        for (Booking booking : bookings) {
+            if (isAvailable(booking.bookingRoomNumber, thisDate, thisDate) == false) {
+                bookingsToDisplay.add(booking);
+            }
+        }
+        for (Booking booking : bookingsToDisplay) {
+            if((booking.bookingCheckOutDate.isBefore(thisDate) || booking.bookingCheckOutDate.isEqual(thisDate)) || (booking.bookingCheckInDate.isAfter(thisDate))) {
+                bookingsToRemove.add(booking);
+            }
+        }
+
+        bookingsToDisplay.removeAll(bookingsToRemove);
+
+        System.out.println("-----------------------------------------------------------------------------------");
+        System.out.printf("%10s %15s %15s %10s %15s %15s %15s\n", "Guest ID", "Name", "Surname", "Room Number", "Room Type", "Room Price", "Payment Price");
+
+        for(Booking booking : bookingsToDisplay) {
+
+            //Find name, surname
+            String name = "";
+            String surname = "";
+            boolean vip = true;
+            double paymentPrice = 0f;
+            int guestID = booking.bookingGuestID;
+
+            for(Guest guest : guests){
+                if(guestID == guest.guestID){
+                    name = guest.guestName;
+                    surname = guest.guestSurname;
+
+                    if(guest instanceof VIPGuest){
+                        vip = true;
+                    }else{
+                        vip = false;
+                    }
+                }
+            }
+
+            //Find room type, price
+            RoomType type = RoomType.DOUBLE;
+            double price = 0f;
+
+            int roomNum = booking.bookingRoomNumber;
+            for(Room room : rooms){
+                if(roomNum == room.roomNumber){
+                    type = room.roomType;
+                    price = room.roomPrice;
+                }
+            }
+
+            if(vip){
+                paymentPrice = price * 0.9;
+            }else{
+                paymentPrice = price;
+            }
+
+            System.out.printf("%10d %15s %15s %10d %15s %15f %15f\n", booking.bookingGuestID, name, surname, booking.bookingRoomNumber, type, price, paymentPrice);
+            }
+
+        System.out.println("-----------------------------------------------------------------------------------");
+    }
+
+    public void displayPaymentsOn(LocalDate thisDate){
+        System.out.println("-----------------------------------------------------------------------------------");
+        System.out.printf("%10s %15s %15s\n", "Guest ID", "Payment Amount", "Reason");
+
+        for(Payment payment : payments){
+            if(payment.paymentDate.equals(thisDate)){
+                System.out.printf("%10d %15f %15s\n", payment.paymentGuestID, payment.paymentTotalAmount, payment.paymentReason);
+            }
+        }
+
+        System.out.println("-----------------------------------------------------------------------------------");
+    }
+
+    public boolean addRoom(int roomNumber, RoomType roomType, double price, int capacity, String facilities) {
         boolean contains = false;
         for(Room room : rooms) {
             if (room.roomNumber == roomNumber) {
@@ -278,7 +386,7 @@ public class HotelImpl{
         }
     }
 
-    public static boolean removeRoom(int roomNumber) {
+    public boolean removeRoom(int roomNumber) {
         boolean contains = false;
         for (Booking book : bookings) {
             if (book.bookingRoomNumber == roomNumber) {
@@ -304,9 +412,11 @@ public class HotelImpl{
         return false;
     }
 
-    public static boolean addGuest(String guestName, String guestSurname, LocalDate guestDateJoin) {
+    public boolean addGuest(String guestName, String guestSurname, LocalDate guestDateJoin) {
+        int newGuestID = guests.get(guests.size()-1).guestID + 1;
+
         try {
-            guests.add(new Guest(newGuestID(),guestName, guestSurname, guestDateJoin));
+            guests.add(new Guest(newGuestID,guestName, guestSurname, guestDateJoin));
             return true;
         }
         catch(Exception e) {
@@ -315,13 +425,11 @@ public class HotelImpl{
         }
     }
 
-    private static int newGuestID(){
-        return (guests.get(guests.size()-1).guestID + 1);
-    }
+    public boolean addGuest(String guestName,String guestSurname,LocalDate guestDateJoin, LocalDate guestVIPStartDate,LocalDate guestVIPExpiryDate) {
+        int newGuestID = guests.get(guests.size()-1).guestID + 1;
 
-    public static boolean addGuest(String guestName,String guestSurname,LocalDate guestDateJoin, LocalDate guestVIPStartDate,LocalDate guestVIPExpiryDate) {
         try {
-            guests.add(new VIPGuest(newGuestID(),guestName, guestSurname, guestDateJoin, guestVIPStartDate, guestVIPExpiryDate));
+            guests.add(new VIPGuest(newGuestID,guestName, guestSurname, guestDateJoin, guestVIPStartDate, guestVIPExpiryDate));
             return true;
         }
         catch(Exception e) {
@@ -330,7 +438,7 @@ public class HotelImpl{
         }
     }
 
-    public static boolean removeGuest(int guestID){
+    public boolean removeGuest(int guestID){
         boolean contains = false;
         LocalDate now = LocalDate.now();
         for (Booking book : bookings) {
@@ -361,6 +469,154 @@ public class HotelImpl{
 
     }
 
+    public int bookOneRoom(int guestID, RoomType roomType, LocalDate checkin, LocalDate checkout){
+        int newBookingID = bookings.get(bookings.size()-1).bookingID + 1;
+
+        int typeAvliable[] = availableRooms(roomType,checkin,checkout);
+        if (typeAvliable.length == 0){
+            return -1;
+        } else {
+            try{
+                // length -1
+                int rnd = new Random().nextInt(typeAvliable.length);
+                double duration = DAYS.between(checkin, checkout);
+                boolean isInstance = false;
+                double price = 0f ;
+                for (Room room: rooms){
+                    if (room.roomNumber == typeAvliable[rnd]){
+                        price = room.roomPrice;
+                    }
+                }
+                for (Guest guest: guests){
+                    if (guest.guestID == guestID){
+                        if (guest instanceof VIPGuest) {
+                            isInstance = true;
+                        }
+                    }
+                }
+                if (isInstance == true){
+                    double bookingTotalAmount = 0.9* duration * price;
+                    bookings.add(new Booking(newBookingID, guestID, typeAvliable[rnd], LocalDate.now(), checkin, checkout, bookingTotalAmount));
+                    return typeAvliable[rnd];
+                } else {
+                    double bookingTotalAmount = duration * price;
+                    bookings.add(new Booking(newBookingID, guestID, typeAvliable[rnd], LocalDate.now(), checkin, checkout, bookingTotalAmount));
+                    return typeAvliable[rnd];
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+                return -1;
+            }
+        }
+
+    }
+
+    public boolean checkOut(int bookingID,LocalDate actualCheckoutDate){
+        try {
+            for (Booking booking : bookings) {
+                if (booking.bookingID == bookingID && booking.bookingCheckOutDate.compareTo(actualCheckoutDate) >= 0 && actualCheckoutDate.compareTo(booking.bookingCheckInDate) >= 0) {
+                    bookings.remove(booking);
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid Booking ID");
+            return false;
+        }
+        System.out.println("Request Denied");
+        return false;
+    }
+
+    public boolean cancelBooking(int bookingID){
+        LocalDate now = LocalDate.now();
+        try {
+            for (Booking booking : bookings) {
+                if (booking.bookingID == bookingID && booking.bookingCheckInDate.toEpochDay()-now.toEpochDay()>1) {
+                    double refund = -booking.bookingTotalAmount;
+                    payments.add(new Payment(now, booking.bookingGuestID, refund, "refund"));
+                    bookings.remove(booking);
+                    return true;
+                }
+
+            }
+        } catch (Exception e) {
+
+            System.out.println(e);
+            return false;
+        }
+        return false;
+    }
+
+    public boolean saveRoomsData(String roomsTxtFileName){
+        try{
+            PrintWriter pw = new PrintWriter(roomsTxtFileName);
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(roomsTxtFileName));
+            for (Room room : rooms) {
+                bufferedWriter.write(""+room.roomNumber+","+room.roomType+","+room.roomPrice+","+room.roomCapacity+","+room.roomFacilities);
+                bufferedWriter.newLine();
+            }
+            bufferedWriter.close();
+            return true;
+
+        } catch (Exception e){
+            return false;
+        }
+    }
+
+    public boolean saveGuestsData(String roomsTxtFileName){
+        try{
+            PrintWriter pw = new PrintWriter(roomsTxtFileName);
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(roomsTxtFileName));
+            for (Guest guest : guests) {
+                if (guest instanceof VIPGuest) {
+                    bufferedWriter.write(guest.guestID + "," + guest.guestName + "," + guest.guestSurname + "," + guest.guestDateJoin+","+((VIPGuest) guest).VIPstartDate+","+((VIPGuest) guest).VIPexpiryDate);
+                    bufferedWriter.newLine();
+                } else {
+                    bufferedWriter.write(guest.guestID + "," + guest.guestName + "," + guest.guestSurname + "," + guest.guestDateJoin);
+                    bufferedWriter.newLine();
+                }
+            }
+            bufferedWriter.close();
+            return true;
+
+        } catch (Exception e){
+            return false;
+        }
+    }
+
+    public boolean saveBookingsData(String roomsTxtFileName){
+        try{
+            PrintWriter pw = new PrintWriter(roomsTxtFileName);
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(roomsTxtFileName));
+            for (Booking booking : bookings) {
+                bufferedWriter.write(booking.bookingID+","+booking.bookingGuestID+","+ booking.bookingRoomNumber+"," +booking.bookingBookingDate+","+ booking.bookingCheckInDate+"," +booking.bookingCheckOutDate+","+ booking.bookingTotalAmount);
+                bufferedWriter.newLine();
+            }
+            bufferedWriter.close();
+            return true;
+
+        } catch (Exception e){
+            return false;
+        }
+    }
+
+    public boolean savePaymentsData(String roomsTxtFileName){
+        try{
+            PrintWriter pw = new PrintWriter(roomsTxtFileName);
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(roomsTxtFileName));
+            for (Payment payment : payments) {
+                bufferedWriter.write(payment.paymentDate+","+ payment.paymentGuestID+","+ payment.paymentTotalAmount+","+ payment.paymentReason);
+                bufferedWriter.newLine();
+            }
+            bufferedWriter.close();
+            return true;
+
+        } catch (Exception e){
+            return false;
+        }
+    }
+
 }
+
 
 

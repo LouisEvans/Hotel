@@ -200,7 +200,7 @@ public interface Hotel{
   *
   * @param  thisDate  a given date
   */
- public void displayPaymentsOn(LocalDate thisDate);
+  public void displayPaymentsOn(LocalDate thisDate);
 
   /**
    * Save all the room records in a text file

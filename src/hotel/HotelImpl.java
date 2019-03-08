@@ -169,22 +169,27 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public void displayAllRooms() {
+        //Display heading. Set column widths
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%5s %20s %10s %5s %30s\n", "Number", "Type", "Price", "Capacity", "Facilities");
+
+        //For each room, print correct data
         for (Room room : rooms) {
-            //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
             System.out.format("%5d %20s %10f %5d %30s\n", room.roomNumber, room.roomType, room.roomPrice, room.roomCapacity, room.roomFacilities);
         }
         System.out.println("-----------------------------------------------------------------------------------");
     }
 
     public void displayAllGuests() {
+        //Display heading. Set column widths
         System.out.println("-----------------------------------------------------------------------------------------------------------------");
         System.out.printf("%5s %15s %15s %15s %20s %20s\n", "ID", "Name", "Surname", "Join Date", "VIP Start Date", "VIP End Date");
+
+        //For each guest, print correct data
         for (Guest guest : guests) {
-            //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
             System.out.format("%5s %15s %15s %15s", guest.guestID, guest.guestName, guest.guestSurname, guest.guestDateJoin);
 
+            //If guest is a VIP, print last two columns as well
             if(guest instanceof VIPGuest){
                 System.out.format("%20s %20s\n", ((VIPGuest)guest).VIPstartDate, ((VIPGuest)guest).VIPexpiryDate);
             }else{
@@ -195,28 +200,34 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public void displayAllBookings(){
+        //Display heading. Set column widths
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%10s %10s %10s %15s %15s %15s %15s\n", "ID", "Guest ID", "Room Number", "Booking Date", "Check-in Date", "Check-out Date", "Total amount");
+
+        //For each booking, print correct data
         for (Booking booking : bookings) {
-            //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
             System.out.format("%10d %10d %10d %15s %15s %15s %15f\n", booking.bookingID, booking.bookingGuestID, booking.bookingRoomNumber, booking.bookingBookingDate, booking.bookingCheckInDate, booking.bookingCheckOutDate, booking.bookingTotalAmount);
         }
         System.out.println("-----------------------------------------------------------------------------------");
     }
 
     public void displayAllPayments(){
+        //Display heading. Set column widths
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%15s %15s %15s %25s\n", "Date", "Guest ID", "Total Amount", "Reason");
+
+        //For each payment, print correct data
         for (Payment payment : payments) {
-            //System.out.println(room.roomNumber+" "+room.roomType.toString()+" "+room.roomPrice+" "+room.roomCapacity+" "+room.roomFacilities);
             System.out.format("%15s %15d %15f %25s\n", payment.paymentDate, payment.paymentGuestID, payment.paymentTotalAmount, payment.paymentReason);
         }
         System.out.println("-----------------------------------------------------------------------------------");
     }
 
     public boolean isAvailable(int roomNumber, LocalDate checkin, LocalDate checkout){
-        for(Booking booking : bookings) {
 
+        //For each booking, if it is the right booking number and overlaps with
+        //another booking, then return false. Else, return true
+        for(Booking booking : bookings) {
             if (roomNumber == booking.bookingRoomNumber) {
                 if(((checkin.isAfter(booking.bookingCheckInDate) || checkin.equals(booking.bookingCheckInDate)) && checkin.isBefore(booking.bookingCheckOutDate)) || (checkin.isBefore(booking.bookingCheckInDate) && checkout.isAfter(booking.bookingCheckInDate))){
                     return false;
@@ -228,23 +239,23 @@ abstract class HotelImpl implements hotel.Hotel{
 
     public int[] availableRooms(RoomType roomType, LocalDate checkin, LocalDate checkout){
 
+        //Get all rooms of a certain RoomType, and remove the ones which obtain
+        //false from isAvailable()
         List<Room> roomsOfType = new ArrayList<>();
         List<Room> roomsToRemove = new ArrayList<>();
-
         for(Room room : rooms){
             if(room.roomType == roomType){
                 roomsOfType.add(room);
             }
         }
-
         for (Room room : roomsOfType) {
             if (isAvailable(room.roomNumber, checkin, checkout) == false) {
                 roomsToRemove.add(room);
             }
         }
-
         roomsOfType.removeAll(roomsToRemove);
 
+        //Add all room numbers to array
         int returnArray[] = new int[roomsOfType.size()];
         int count = 0;
         for(Room room : roomsOfType){
@@ -257,14 +268,15 @@ abstract class HotelImpl implements hotel.Hotel{
 
     public int[] searchGuest(String firstName, String lastName){
 
+        //Get all guest IDs of guests who match firstName and lastName
         List<Integer> guestIDs = new ArrayList<>();
-
         for(Guest guest : guests){
             if(guest.guestName.equals(firstName) && guest.guestSurname.equals(lastName)){
                 guestIDs.add(guest.guestID);
             }
         }
 
+        //Add guests to array
         int[] returnArray = new int[guestIDs.size()];
         int count = 0;
         for(Integer guestID : guestIDs){
@@ -275,8 +287,12 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public void displayGuestBooking(int guestID){
+
+        //Display heading. Set column widths
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%10s %10s %10s %15s %15s %15s %15s\n", "ID", "Guest ID", "Room Number", "Booking Date", "Check-in Date", "Check-out Date", "Total amount");
+
+        //For each booking, print correct data
         for(Booking booking : bookings){
             if(booking.bookingGuestID == guestID){
                 System.out.format("%10d %10d %10d %15s %15s %15s %15f\n", booking.bookingID, booking.bookingGuestID, booking.bookingRoomNumber, booking.bookingBookingDate, booking.bookingCheckInDate, booking.bookingCheckOutDate, booking.bookingTotalAmount);
@@ -287,9 +303,9 @@ abstract class HotelImpl implements hotel.Hotel{
 
     public void displayBookingsOn(LocalDate thisDate) {
 
+        //Get all bookings on a given date
         List<Booking> bookingsToDisplay = new ArrayList<>();
         List<Booking> bookingsToRemove = new ArrayList<>();
-
         for (Booking booking : bookings) {
             if (isAvailable(booking.bookingRoomNumber, thisDate, thisDate) == false) {
                 bookingsToDisplay.add(booking);
@@ -300,21 +316,22 @@ abstract class HotelImpl implements hotel.Hotel{
                 bookingsToRemove.add(booking);
             }
         }
-
         bookingsToDisplay.removeAll(bookingsToRemove);
 
+        //Display heading. Set column widths
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%10s %15s %15s %10s %15s %15s %15s\n", "Guest ID", "Name", "Surname", "Room Number", "Room Type", "Room Price", "Payment Price");
 
+        //For each booking on given date, find guest data and room data
         for(Booking booking : bookingsToDisplay) {
-
-            //Find name, surname
+            //Set defaults
             String name = "";
             String surname = "";
             boolean vip = true;
             double paymentPrice = 0f;
             int guestID = booking.bookingGuestID;
 
+            //Find guest data
             for(Guest guest : guests){
                 if(guestID == guest.guestID){
                     name = guest.guestName;
@@ -340,28 +357,30 @@ abstract class HotelImpl implements hotel.Hotel{
                 }
             }
 
+            //Add discount if VIP
             if(vip){
                 paymentPrice = price * 0.9;
             }else{
                 paymentPrice = price;
             }
 
+            //Print correct data
             System.out.printf("%10d %15s %15s %10d %15s %15f %15f\n", booking.bookingGuestID, name, surname, booking.bookingRoomNumber, type, price, paymentPrice);
             }
-
         System.out.println("-----------------------------------------------------------------------------------");
     }
 
     public void displayPaymentsOn(LocalDate thisDate){
+        //Display heading. Set column widths
         System.out.println("-----------------------------------------------------------------------------------");
         System.out.printf("%10s %15s %15s\n", "Guest ID", "Payment Amount", "Reason");
 
+        //For each payment, print correct data
         for(Payment payment : payments){
             if(payment.paymentDate.equals(thisDate)){
                 System.out.printf("%10d %15f %15s\n", payment.paymentGuestID, payment.paymentTotalAmount, payment.paymentReason);
             }
         }
-
         System.out.println("-----------------------------------------------------------------------------------");
     }
 

@@ -385,12 +385,14 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean addRoom(int roomNumber, RoomType roomType, double price, int capacity, String facilities) {
+        // Checks if the room already exists
         boolean contains = false;
         for(Room room : rooms) {
             if (room.roomNumber == roomNumber) {
                 contains = true;
             }
         }
+        // Adds the room if it dosent already exist
         if (contains == false){
             try {
                 rooms.add(new Room(roomNumber, roomType, price, capacity, facilities));
@@ -406,12 +408,14 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean removeRoom(int roomNumber) {
+        // Checks if the room has a booking
         boolean contains = false;
         for (Booking book : bookings) {
             if (book.bookingRoomNumber == roomNumber) {
                 contains = true;
             }
         }
+        // If it dosent it can be removed
         if (contains == false) {
             try {
                 for (Room room : rooms) {
@@ -432,9 +436,10 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean addGuest(String guestName, String guestSurname, LocalDate guestDateJoin) {
+        // Adds 1 to the last guestID
         int newGuestID = guests.get(guests.size()-1).guestID + 1;
-
         try {
+            // Adds a new guest with the parameters
             guests.add(new Guest(newGuestID,guestName, guestSurname, guestDateJoin));
             return true;
         }
@@ -445,8 +450,9 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean addGuest(String guestName,String guestSurname,LocalDate guestDateJoin, LocalDate guestVIPStartDate,LocalDate guestVIPExpiryDate) {
+        // Adds 1 to the last guestID
         int newGuestID = guests.get(guests.size()-1).guestID + 1;
-
+        // Adds a VIP guest with the parameters
         try {
             guests.add(new VIPGuest(newGuestID,guestName, guestSurname, guestDateJoin, guestVIPStartDate, guestVIPExpiryDate));
             return true;
@@ -460,6 +466,7 @@ abstract class HotelImpl implements hotel.Hotel{
     public boolean removeGuest(int guestID){
         boolean contains = false;
         LocalDate now = LocalDate.now();
+        // Checks if the guest has any future bookings
         for (Booking book : bookings) {
             if (book.bookingGuestID == guestID && book.bookingCheckInDate.compareTo(now) > 0) {
                 contains = true;
@@ -468,6 +475,7 @@ abstract class HotelImpl implements hotel.Hotel{
             }
 
         }
+        // Removes the guest if they dont have a booking
         if (contains == false) {
             try {
                 for (Guest hotelGuest : guests) {
@@ -489,23 +497,26 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public int bookOneRoom(int guestID, RoomType roomType, LocalDate checkin, LocalDate checkout){
+        // Adds 1 to the last BookingID
         int newBookingID = bookings.get(bookings.size()-1).bookingID + 1;
-
         int typeAvliable[] = availableRooms(roomType,checkin,checkout);
+        // Checks if the type of room is avaliable
         if (typeAvliable.length == 0){
             return -1;
         } else {
             try{
-                // length -1
+                // Picks a random room and calculates the duration
                 int rnd = new Random().nextInt(typeAvliable.length);
                 double duration = DAYS.between(checkin, checkout);
                 boolean isInstance = false;
                 double price = 0f ;
                 for (Room room: rooms){
+                    // Price of the room
                     if (room.roomNumber == typeAvliable[rnd]){
                         price = room.roomPrice;
                     }
                 }
+                // Checks if the guest is a VIP
                 for (Guest guest: guests){
                     if (guest.guestID == guestID){
                         if (guest instanceof VIPGuest) {
@@ -513,6 +524,7 @@ abstract class HotelImpl implements hotel.Hotel{
                         }
                     }
                 }
+                // Creates a new booking
                 if (isInstance == true){
                     double bookingTotalAmount = 0.9* duration * price;
                     bookings.add(new Booking(newBookingID, guestID, typeAvliable[rnd], LocalDate.now(), checkin, checkout, bookingTotalAmount));
@@ -531,6 +543,8 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean checkOut(int bookingID,LocalDate actualCheckoutDate){
+        // Checks that the booking ID is the right one
+        // Checks the checkOutDate is before or is on the check out date.
         try {
             for (Booking booking : bookings) {
                 if (booking.bookingID == bookingID && booking.bookingCheckOutDate.compareTo(actualCheckoutDate) >= 0 && actualCheckoutDate.compareTo(booking.bookingCheckInDate) >= 0) {
@@ -547,9 +561,12 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean cancelBooking(int bookingID){
+        // Checks the cancel date is 2 days before the checkin date
         LocalDate now = LocalDate.now();
         try {
             for (Booking booking : bookings) {
+                // Checks the difference in the epoch days is > 1
+                // Removes booking and adds a new payment
                 if (booking.bookingID == bookingID && booking.bookingCheckInDate.toEpochDay()-now.toEpochDay()>1) {
                     double refund = -booking.bookingTotalAmount;
                     payments.add(new Payment(now, booking.bookingGuestID, refund, "refund"));
@@ -567,6 +584,7 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean saveRoomsData(String roomsTxtFileName){
+        // Over writes the old file and adds the new data into the file
         try{
             PrintWriter pw = new PrintWriter(roomsTxtFileName);
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(roomsTxtFileName));
@@ -574,6 +592,7 @@ abstract class HotelImpl implements hotel.Hotel{
                 bufferedWriter.write(""+room.roomNumber+","+room.roomType+","+room.roomPrice+","+room.roomCapacity+","+room.roomFacilities);
                 bufferedWriter.newLine();
             }
+            // Closes the file
             bufferedWriter.close();
             return true;
 
@@ -583,6 +602,7 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean saveGuestsData(String roomsTxtFileName){
+        // Over writes the old file and adds the new data into the file
         try{
             PrintWriter pw = new PrintWriter(roomsTxtFileName);
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(roomsTxtFileName));
@@ -595,6 +615,7 @@ abstract class HotelImpl implements hotel.Hotel{
                     bufferedWriter.newLine();
                 }
             }
+            // Closes the file
             bufferedWriter.close();
             return true;
 
@@ -604,6 +625,7 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean saveBookingsData(String roomsTxtFileName){
+        // Over writes the old file and adds the new data into the file
         try{
             PrintWriter pw = new PrintWriter(roomsTxtFileName);
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(roomsTxtFileName));
@@ -611,6 +633,7 @@ abstract class HotelImpl implements hotel.Hotel{
                 bufferedWriter.write(booking.bookingID+","+booking.bookingGuestID+","+ booking.bookingRoomNumber+"," +booking.bookingBookingDate+","+ booking.bookingCheckInDate+"," +booking.bookingCheckOutDate+","+ booking.bookingTotalAmount);
                 bufferedWriter.newLine();
             }
+            // Closes the file
             bufferedWriter.close();
             return true;
 
@@ -620,6 +643,7 @@ abstract class HotelImpl implements hotel.Hotel{
     }
 
     public boolean savePaymentsData(String roomsTxtFileName){
+        // Over writes the old file and adds the new data into the file
         try{
             PrintWriter pw = new PrintWriter(roomsTxtFileName);
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(roomsTxtFileName));
@@ -627,6 +651,7 @@ abstract class HotelImpl implements hotel.Hotel{
                 bufferedWriter.write(payment.paymentDate+","+ payment.paymentGuestID+","+ payment.paymentTotalAmount+","+ payment.paymentReason);
                 bufferedWriter.newLine();
             }
+            // Closes the file
             bufferedWriter.close();
             return true;
 

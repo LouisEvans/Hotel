@@ -337,7 +337,8 @@ abstract class HotelImpl implements hotel.Hotel{
                     name = guest.guestName;
                     surname = guest.guestSurname;
 
-                    if(guest instanceof VIPGuest){
+                    //If guest is VIP and membership is not expired, set flag to true
+                    if(guest instanceof VIPGuest && ((VIPGuest) guest).VIPexpiryDate.compareTo(LocalDate.now()) > 0 ){
                         vip = true;
                     }else{
                         vip = false;
@@ -519,7 +520,8 @@ abstract class HotelImpl implements hotel.Hotel{
                 // Checks if the guest is a VIP
                 for (Guest guest: guests){
                     if (guest.guestID == guestID){
-                        if (guest instanceof VIPGuest) {
+                        //If guest is VIP and membership is not expired, set flag to true
+                        if (guest instanceof VIPGuest && ((VIPGuest) guest).VIPexpiryDate.compareTo(LocalDate.now()) > 0) {
                             isInstance = true;
                         }
                     }

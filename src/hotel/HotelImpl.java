@@ -9,12 +9,19 @@ import java.util.Random;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
-abstract class HotelImpl implements hotel.Hotel{
+public class HotelImpl implements hotel.Hotel{
 
     private static List<Room> rooms = new ArrayList<>();
     private static List<Guest> guests = new ArrayList<>();
     private static List<Booking> bookings = new ArrayList<>();
     private static List<Payment> payments = new ArrayList<>();
+
+    public HotelImpl(String roomsTxtFileName, String guestsTxtFileName, String bookingsTxtFileName, String paymentsTxtFileName) {
+        importBookingsData(bookingsTxtFileName);
+        importGuestsData(guestsTxtFileName);
+        importPaymentsData(paymentsTxtFileName);
+        importRoomsData(roomsTxtFileName);
+    }
 
     /*public void main(String args[]){
 
@@ -23,21 +30,6 @@ abstract class HotelImpl implements hotel.Hotel{
         //System.out.println(importBookingsData("src/data/bookings.txt"));
         //System.out.println(importPaymentsData("src/data/payments.txt"));
 
-        //displayAllRooms();
-        //addRoom(123,RoomType.DOUBLE,123.00,2,"no bathroom");
-        //displayAllRooms();
-
-        //displayAllRooms();
-        //displayAllBookings();
-        //System.out.println(Arrays.toString(availableRooms(RoomType.FAMILY, LocalDate.parse("2019-04-04"), LocalDate.parse("2019-04-10"))));
-        //System.out.println(isAvailable(102, LocalDate.parse("2019-04-01"), LocalDate.parse("2019-04-10")));
-
-        //displayAllGuests();
-        //System.out.println(Arrays.toString(searchGuest("Sarah","Hoopern")));
-        //displayGuestBooking(10001);
-
-        //displayBookingsOn(LocalDate.parse("2019-04-01"));
-        //displayPaymentsOn(LocalDate.parse("2019-02-11"));
     }*/
 
     public boolean importRoomsData(String roomsTxtFileName){
@@ -337,6 +329,9 @@ abstract class HotelImpl implements hotel.Hotel{
                     name = guest.guestName;
                     surname = guest.guestSurname;
 
+                    assert name != "";
+                    assert surname != "";
+
                     //If guest is VIP and membership is not expired, set flag to true
                     if(guest instanceof VIPGuest && ((VIPGuest) guest).VIPexpiryDate.compareTo(LocalDate.now()) > 0 ){
                         vip = true;
@@ -500,20 +495,20 @@ abstract class HotelImpl implements hotel.Hotel{
     public int bookOneRoom(int guestID, RoomType roomType, LocalDate checkin, LocalDate checkout){
         // Adds 1 to the last BookingID
         int newBookingID = bookings.get(bookings.size()-1).bookingID + 1;
-        int typeAvliable[] = availableRooms(roomType,checkin,checkout);
+        int typeAvailable[] = availableRooms(roomType,checkin,checkout);
         // Checks if the type of room is avaliable
-        if (typeAvliable.length == 0){
+        if (typeAvailable.length == 0){
             return -1;
         } else {
             try{
                 // Picks a random room and calculates the duration
-                int rnd = new Random().nextInt(typeAvliable.length);
+                int rnd = new Random().nextInt(typeAvailable.length);
                 double duration = DAYS.between(checkin, checkout);
                 boolean isInstance = false;
                 double price = 0f ;
                 for (Room room: rooms){
                     // Price of the room
-                    if (room.roomNumber == typeAvliable[rnd]){
+                    if (room.roomNumber == typeAvailable[rnd]){
                         price = room.roomPrice;
                     }
                 }
@@ -528,13 +523,16 @@ abstract class HotelImpl implements hotel.Hotel{
                 }
                 // Creates a new booking
                 if (isInstance == true){
-                    double bookingTotalAmount = 0.9* duration * price;
-                    bookings.add(new Booking(newBookingID, guestID, typeAvliable[rnd], LocalDate.now(), checkin, checkout, bookingTotalAmount));
-                    return typeAvliable[rnd];
+                    double bookingTotalAmount = 0.9 * duration * price;
+                    bookings.add(new Booking(newBookingID, guestID, typeAvailable[rnd], LocalDate.now(), checkin, checkout, bookingTotalAmount));
+
+                    assert bookingTotalAmount == price * 0.9 * duration;
+
+                    return typeAvailable[rnd];
                 } else {
                     double bookingTotalAmount = duration * price;
-                    bookings.add(new Booking(newBookingID, guestID, typeAvliable[rnd], LocalDate.now(), checkin, checkout, bookingTotalAmount));
-                    return typeAvliable[rnd];
+                    bookings.add(new Booking(newBookingID, guestID, typeAvailable[rnd], LocalDate.now(), checkin, checkout, bookingTotalAmount));
+                    return typeAvailable[rnd];
                 }
             } catch (Exception e) {
                 System.out.println(e);
@@ -551,6 +549,9 @@ abstract class HotelImpl implements hotel.Hotel{
             for (Booking booking : bookings) {
                 if (booking.bookingID == bookingID && booking.bookingCheckOutDate.compareTo(actualCheckoutDate) >= 0 && actualCheckoutDate.compareTo(booking.bookingCheckInDate) >= 0) {
                     bookings.remove(booking);
+
+                    assert bookings.contains(booking) == false;
+
                     return true;
                 }
             }
@@ -573,9 +574,11 @@ abstract class HotelImpl implements hotel.Hotel{
                     double refund = -booking.bookingTotalAmount;
                     payments.add(new Payment(now, booking.bookingGuestID, refund, "refund"));
                     bookings.remove(booking);
+
+                    assert bookings.contains(booking) == false;
+
                     return true;
                 }
-
             }
         } catch (Exception e) {
 
